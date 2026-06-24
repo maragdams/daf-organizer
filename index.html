@@ -818,7 +818,7 @@
           return;
         }
         try {
-          const path = ${slugify(currentCourse?.name)}/${slugify(currentLevel?.name)}/${slugify(currentSublevel?.name)}/${slugify(currentLesson?.title)}/${Date.now()}_${slugify(file.name)};
+          const path = ${currentCourse?.name}/${currentLevel?.name}/${currentSublevel?.name}/${currentLesson?.title}/${Date.now()}_${file.name};
           const { error: uploadError } = await supabase.storage
             .from("materials")
             .upload(path, file, { upsert: false });
