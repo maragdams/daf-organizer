@@ -6,16 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- PWA: Manifest wird dynamisch erzeugt -->
-  <script type="module">
-    function slugify(text) {
-  return text
-    .toString()
-    .normalize("NFD")                // Umlaute entfernen
-    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
-    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
-    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
-    .toLowerCase();
-}
+  <script>
     const manifest = {
       name: "DaF Material Organizer",
       short_name: "DaF-Material",
@@ -365,6 +356,15 @@
   </main>
 
   <script type="module">
+    function slugify(text) {
+  return text
+    .toString()
+    .normalize("NFD")                // Umlaute entfernen
+    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
+    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
+    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
+    .toLowerCase();
+}
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
     const SUPABASE_URL = "https://wgqxwuyituzzrqxwlqwd.supabase.co";
