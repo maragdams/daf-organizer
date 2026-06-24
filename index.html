@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="DaF Materialien">
+<title>DaF Materialien</title>
+<style>
+  :root {
+    --bg: #FAFAFA; --surface: #FFFFFF; --border: #EBEBEB;
+    --text-primary: #1A1A1A; --text-secondary: #6B6B6B; --text-muted: #ADADAD;
+    --accent: #3D5A99; --accent-light: #EEF1F8; --accent-hover: #2E4577;
+    --danger: #C0392B; --danger-light: #FDECEA;
+    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100dvh; overflow-x: hidden; }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(250,250,250,0.92); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); padding: 0 16px; height: 56px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .topbar-back { display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; cursor: pointer; color: var(--accent); font-size: 20px; }
+  .topbar-back.visible { display: flex; }
+  .topbar-title { flex: 1; font-size: 17px; font-weight: 600; letter-spacing: -0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .topbar-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn { width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--accent); }
+  .icon-btn:active { background: var(--accent-light); }
+
+  .breadcrumb { display: none; padding: 8px 16px 0; font-size: 12px; color: var(--text-muted); gap: 4px; align-items: center; flex-wrap: wrap; }
+  .breadcrumb.visible { display: flex; }
+  .bc-item { cursor: pointer; color: var(--accent); }
+  .bc-sep { color: var(--text-muted); }
+  .bc-current { color: var(--text-secondary); }
+
+  .content { padding: 16px; padding-bottom: 100px; }
+
+  .empty-state { text-align: center; padding: 64px 24px; color: var(--text-muted); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 { font-size: 17px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; line-height: 1.5; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 14px; cursor: pointer; transition: transform 0.1s; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; -webkit-user-select: none; user-select: none; }
+  .card:active { transform: scale(0.97); }
+  .card-emoji { font-size: 28px; }
+  .card-name { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.3; word-break: break-word; }
+  .card-meta { font-size: 11px; color: var(--text-muted); }
+  .card-level-badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 20px; background: var(--accent-light); color: var(--accent); text-transform: uppercase; align-self: flex-start; }
+  .card-delete { position: absolute; top: 8px; right: 8px; width: 24px; height: 24px; border-radius: 50%; border: none; background: var(--danger-light); color: var(--danger); font-size: 14px; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 2; }
+  .edit-mode .card-delete { display: flex; }
+  .edit-mode .card { cursor: default; }
+
+  .material-list { display: flex; flex-direction: column; gap: 8px; }
+  .material-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 14px; display: flex; align-items: flex-start; gap: 12px; }
+  .material-icon { width: 40px; height: 40px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .mat-link .material-icon { background: #EEF3FF; }
+  .mat-note .material-icon { background: #FFF8E6; }
+  .mat-image .material-icon { background: #F0FFF4; }
+  .mat-audio .material-icon { background: #FFF0F6; }
+  .mat-video .material-icon { background: #F3F0FF; }
+  .mat-pdf .material-icon { background: #FFF4F0; }
+  .mat-file .material-icon { background: #F5F5F5; }
+  .material-body { flex: 1; min-width: 0; }
+  .material-title { font-size: 14px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px; }
+  .material-sub { font-size: 12px; color: var(--text-muted); line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .material-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+  .mat-share-btn, .mat-del-btn { width: 32px; height: 32px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+  .mat-share-btn { background: var(--accent-light); color: var(--accent); }
+  .mat-share-btn:active { background: var(--accent); color: #fff; }
+  .mat-del-btn { background: var(--danger-light); color: var(--danger); }
+  .mat-del-btn:active { background: var(--danger); color: #fff; }
+  .mat-image-preview { width: 100%; border-radius: var(--radius-sm); margin-top: 10px; max-height: 180px; object-fit: cover; display: block; }
+  .mat-audio-player, .mat-video-player { width: 100%; margin-top: 10px; border-radius: var(--radius-sm); }
+  .mat-file-link { display: inline-block; margin-top: 8px; font-size: 13px; color: var(--accent); font-weight: 600; text-decoration: none; }
+
+  .fab { position: fixed; bottom: 28px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #fff; border: none; font-size: 26px; cursor: pointer; box-shadow: 0 4px 16px rgba(61,90,153,0.35); display: flex; align-items: center; justify-content: center; z-index: 200; transition: transform 0.15s; }
+  .fab:active { transform: scale(0.93); }
+
+  .modal-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.45); display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 20px 40px; width: 100%; max-width: 540px; transform: translateY(100%); transition: transform 0.25s cubic-bezier(0.32,0.72,0,1); max-height: 90dvh; overflow-y: auto; }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border); margin: 0 auto 20px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+
+  .form-group { margin-bottom: 16px; }
+  .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input, .form-textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); font-size: 15px; font-family: inherit; color: var(--text-primary); background: var(--bg); outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
+  .form-input:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 80px; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 4px; }
+  .type-btn { border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); padding: 10px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.3px; }
+  .type-btn .tb-icon { font-size: 22px; }
+  .type-btn.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+  .file-drop { border: 2px dashed var(--border); border-radius: var(--radius-sm); padding: 24px; text-align: center; cursor: pointer; font-size: 13px; color: var(--text-muted); transition: border-color 0.15s; }
+  .file-drop:active { border-color: var(--accent); }
+  .file-drop .drop-icon { font-size: 28px; margin-bottom: 6px; }
+
+  .upload-progress { height: 4px; background: var(--border); border-radius: 2px; margin-top: 10px; overflow: hidden; display: none; }
+  .upload-progress.visible { display: block; }
+  .upload-progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
+
+  .btn-primary { width: 100%; padding: 14px; border-radius: var(--radius-md); border: none; background: var(--accent); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+  .btn-primary:active { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-secondary { width: 100%; padding: 13px; border-radius: var(--radius-md); border: 1.5px solid var(--border); background: transparent; color: var(--text-primary); font-size: 15px; font-weight: 500; cursor: pointer; font-family: inherit; margin-top: 8px; }
+
+  .color-dots { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2.5px solid transparent; transition: border-color 0.12s; flex-shrink: 0; }
+  .color-dot.selected { border-color: var(--text-primary); }
+
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: #1A1A1A; color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 14px; font-weight: 500; z-index: 500; opacity: 0; pointer-events: none; transition: opacity 0.2s; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111111; --surface: #1C1C1E; --border: #2C2C2E; --text-primary: #F2F2F7; --text-secondary: #AEAEB2; --text-muted: #636366; --accent-light: #1C2540; }
+    .topbar { background: rgba(17,17,17,0.92); }
+    .modal-overlay { background: rgba(0,0,0,0.65); }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="topbar-back" id="backBtn" onclick="goBack()">‹</button>
+  <div style="flex:1; min-width:0;"><div class="topbar-title" id="topbarTitle">DaF Materialien</div></div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="editModeBtn" onclick="toggleEditMode()">✏️</button>
+  </div>
+</div>
+
+<div class="breadcrumb" id="breadcrumb"></div>
+<div class="content" id="mainContent"></div>
+<button class="fab" onclick="openAddModal()">＋</button>
+
+<div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+  <div class="modal"><div class="modal-handle"></div><div id="modalContent"></div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════
+const SUPABASE_URL = 'https://wgqxwuyituzzrqxwlqwd.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndncXh3dXlpdHV6enJxeHdscXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDUzNzQsImV4cCI6MjA5Nzg4MTM3NH0.ObY19ctKk9gUm5rGOYmMa5M4jGGsNGL9NUxtSg6F9tY';
+const BUCKET = 'materialien';
+
+function storageUrl(path) {
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+}
+
+async function sbStorage(filePath, file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${SUPABASE_URL}/storage/v1/object/${BUCKET}/${filePath}`);
+    xhr.setRequestHeader('apikey', SUPABASE_KEY);
+    xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_KEY}`);
+    if (onProgress) xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(Math.round(e.loaded/e.total*100)); };
+    xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error('Upload fehlgeschlagen ('+xhr.status+'): ' + xhr.responseText));
+    xhr.onerror = () => reject(new Error('Netzwerkfehler beim Upload'));
+    xhr.send(file);
+  });
+}
+
+async function deleteStorageFile(path) {
+  try {
+    await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${path}`, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let state = { courses: [] };
+let nav = [];
+let editMode = false;
+const STORAGE_KEY = 'daf_organizer_v3';
+const COURSE_COLORS = ['#3D5A99','#27AE60','#E67E22','#8E44AD','#C0392B','#16A085','#2980B9','#D35400'];
+const COURSE_EMOJIS = ['📚','🎯','✏️','🗂️','📖','🌍','🎓','💡','📝','🔤'];
+
+function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { showToast('Fehler beim Speichern'); } }
+function load() { try { const d = localStorage.getItem(STORAGE_KEY); if (d) state = JSON.parse(d); } catch(e) { state = { courses: [] }; } }
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
+function currentLevel() { return nav.length === 0 ? 'courses' : nav[nav.length-1].type; }
+function push(obj) { nav.push(obj); render(); }
+function goBack() { if (nav.length === 0) return; nav.pop(); render(); }
+function getCourse(cid) { return state.courses.find(c => c.id === cid); }
+function getSubfolder(cid, sid) { return getCourse(cid)?.subfolders?.find(s => s.id === sid); }
+function getLesson(cid, sid, lid) { return getSubfolder(cid, sid)?.lessons?.find(l => l.id === lid); }
+function uid() { return '_' + Math.random().toString(36).slice(2,10); }
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+function render() {
+  document.getElementById('backBtn').classList.toggle('visible', nav.length > 0);
+
+  const bc = document.getElementById('breadcrumb');
+  if (nav.length === 0) { bc.classList.remove('visible'); bc.innerHTML = ''; }
+  else {
+    bc.classList.add('visible');
+    let html = `<span class="bc-item" onclick="nav=[]; render()">Kurse</span>`;
+    if (nav.length >= 1) {
+      const c = getCourse(nav[0].courseId);
+      if (c) {
+        if (nav.length === 1) html += `<span class="bc-sep">›</span><span class="bc-current">${esc(c.name)}</span>`;
+        else html += `<span class="bc-sep">›</span><span class="bc-item" onclick="nav=nav.slice(0,1); render()">${esc(c.name)}</span>`;
+      }
+    }
+    if (nav.length >= 2) {
+      const s = getSubfolder(nav[0].courseId, nav[1].subfolderId);
+      if (s) {
+        if (nav.length === 2) html += `<span class="bc-sep">›</span><span class="bc-current">${esc(s.name)}</span>`;
+        else html += `<span class="bc-sep">›</span><span class="bc-item" onclick="nav=nav.slice(0,2); render()">${esc(s.name)}</span>`;
+      }
+    }
+    if (nav.length >= 3) {
+      const l = getLesson(nav[0].courseId, nav[1].subfolderId, nav[2].lessonId);
+      if (l) html += `<span class="bc-sep">›</span><span class="bc-current">${esc(l.name)}</span>`;
+    }
+    bc.innerHTML = html;
+  }
+
+  const titles = ['DaF Materialien', getCourse(nav[0]?.courseId)?.name, getSubfolder(nav[0]?.courseId, nav[1]?.subfolderId)?.name, getLesson(nav[0]?.courseId, nav[1]?.subfolderId, nav[2]?.lessonId)?.name];
+  document.getElementById('topbarTitle').textContent = titles[nav.length] || 'DaF Materialien';
+
+  const ec = editMode ? ' edit-mode' : '';
+  const content = document.getElementById('mainContent');
+  if (nav.length === 0) content.innerHTML = renderCourses(ec);
+  else if (nav.length === 1) content.innerHTML = renderSubfolders(nav[0].courseId, ec);
+  else if (nav.length === 2) content.innerHTML = renderLessons(nav[0].courseId, nav[1].subfolderId, ec);
+  else content.innerHTML = renderMaterials(nav[0].courseId, nav[1].subfolderId, nav[2].lessonId, ec);
+}
+
+function renderCourses(ec) {
+  if (!state.courses.length) return `<div class="empty-state"><div class="empty-icon">📚</div><h3>Noch keine Kurse</h3><p>Tippe auf ＋ um deinen ersten Kurs zu erstellen.</p></div>`;
+  return `<div class="card-grid${ec}">${state.courses.map(c => `
+    <div class="card" onclick="${ec ? '' : `push({type:'subfolders',courseId:'${c.id}'})`}">
+      <button class="card-delete" onclick="event.stopPropagation(); deleteCourse('${c.id}')">✕</button>
+      <div class="card-emoji">${c.emoji||'📚'}</div>
+      <div class="card-name">${esc(c.name)}</div>
+      ${c.level ? `<div class="card-level-badge" style="background:${c.color||'#3D5A99'}22; color:${c.color||'#3D5A99'}">${esc(c.level)}</div>` : ''}
+      <div class="card-meta">${(c.subfolders||[]).length} Unterordner</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderSubfolders(cid, ec) {
+  const subs = getCourse(cid)?.subfolders || [];
+  if (!subs.length) return `<div class="empty-state"><div class="empty-icon">🗂️</div><h3>Noch keine Unterordner</h3><p>Tippe auf ＋ um einen Unterordner zu erstellen.</p></div>`;
+  return `<div class="card-grid${ec}">${subs.map(s => `
+    <div class="card" onclick="${ec ? '' : `push({type:'lessons',courseId:'${cid}',subfolderId:'${s.id}'})`}">
+      <button class="card-delete" onclick="event.stopPropagation(); deleteSubfolder('${cid}','${s.id}')">✕</button>
+      <div class="card-emoji">${s.emoji||'🗂️'}</div>
+      <div class="card-name">${esc(s.name)}</div>
+      <div class="card-meta">${(s.lessons||[]).length} Lektionen</div>
+    </div>`).join('')}</div>`;
+}
+
+function renderLessons(cid, sid, ec) {
+  const lessons = getSubfolder(cid, sid)?.lessons || [];
+  if (!lessons.length) return `<div class="empty-state"><div class="empty-icon">📖</div><h3>Noch keine Lektionen</h3><p>Tippe auf ＋ um eine Lektion zu erstellen.</p></div>`;
+  return `<div class="card-grid${ec}">${lessons.map(l => `
+    <div class="card" onclick="${ec ? '' : `push({type:'materials',courseId:'${cid}',subfolderId:'${sid}',lessonId:'${l.id}'})`}">
+      <button class="card-delete" onclick="event.stopPropagation(); deleteLesson('${cid}','${sid}','${l.id}')">✕</button>
+      <div class="card-emoji">${l.emoji||'📖'}</div>
+      <div class="card-name">${esc(l.name)}</div>
+      <div class="card-meta">${(l.materials||[]).length} Material${(l.materials||[]).length!==1?'ien':''}</div>
+    </div>`).join('')}</div>`;
+}
+
+const MAT_META = {
+  link:  { icon:'🔗', label:'Link' }, note: { icon:'📝', label:'Notiz' },
+  image: { icon:'🖼️', label:'Bild' }, audio: { icon:'🎵', label:'Audio' },
+  video: { icon:'🎬', label:'Video' }, pdf: { icon:'📄', label:'PDF' }, file: { icon:'📎', label:'Datei' },
+};
+
+function renderMaterials(cid, sid, lid, ec) {
+  const mats = getLesson(cid, sid, lid)?.materials || [];
+  if (!mats.length) return `<div class="empty-state"><div class="empty-icon">✨</div><h3>Lektion ist noch leer</h3><p>Tippe auf ＋ um Materialien hinzuzufügen.</p></div>`;
+  return `<div class="material-list">${mats.map(m => {
+    const meta = MAT_META[m.type] || MAT_META.file;
+    let preview = '';
+    if (m.type === 'image' && m.storagePath) preview = `<img class="mat-image-preview" src="${storageUrl(m.storagePath)}" loading="lazy">`;
+    else if (m.type === 'audio' && m.storagePath) preview = `<audio class="mat-audio-player" controls src="${storageUrl(m.storagePath)}"></audio>`;
+    else if (m.type === 'video' && m.storagePath) preview = `<video class="mat-video-player" controls src="${storageUrl(m.storagePath)}" playsinline></video>`;
+    else if ((m.type === 'pdf' || m.type === 'file') && m.storagePath) preview = `<a class="mat-file-link" href="${storageUrl(m.storagePath)}" target="_blank">${meta.icon} ${esc(m.fileName||m.name)} öffnen</a>`;
+    return `
+    <div class="material-item mat-${m.type}">
+      <div class="material-icon">${meta.icon}</div>
+      <div class="material-body">
+        <div class="material-title">${esc(m.name)}</div>
+        ${m.note ? `<div class="material-sub">${esc(m.note)}</div>` : ''}
+        ${m.url ? `<div class="material-sub" style="color:var(--accent)">${esc(m.url)}</div>` : ''}
+        ${preview}
+      </div>
+      <div class="material-actions">
+        <button class="mat-share-btn" onclick="shareMaterial('${m.id}','${cid}','${sid}','${lid}')">⬆️</button>
+        <button class="mat-del-btn" onclick="deleteMaterial('${m.id}','${cid}','${sid}','${lid}')">✕</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════
+// SHARE
+// ═══════════════════════════════════════
+async function shareMaterial(mid, cid, sid, lid) {
+  const m = getLesson(cid, sid, lid)?.materials?.find(x => x.id === mid);
+  if (!m) return;
+  const shareData = { title: m.name };
+  if (m.type === 'link') { shareData.url = m.url; shareData.text = m.note || m.name; }
+  else if (m.type === 'note') { shareData.text = m.name + (m.note ? '\n\n' + m.note : ''); }
+  else if (m.storagePath) { shareData.url = storageUrl(m.storagePath); shareData.text = m.note || ''; }
+
+  if (navigator.share) {
+    try { await navigator.share(shareData); }
+    catch(e) { if (e.name !== 'AbortError') showToast('Teilen fehlgeschlagen'); }
+  } else {
+    try { await navigator.clipboard.writeText(shareData.url || shareData.text || ''); showToast('In Zwischenablage kopiert ✓'); }
+    catch(e) { showToast('Teilen nicht unterstützt'); }
+  }
+}
+
+// ═══════════════════════════════════════
+// ADD MODAL
+// ═══════════════════════════════════════
+function openAddModal() {
+  const level = currentLevel();
+  if (level === 'courses') openAddCourse();
+  else if (level === 'subfolders') openAddSubfolder();
+  else if (level === 'lessons') openAddLesson();
+  else openAddMaterial();
+}
+
+function openAddCourse() {
+  const cols = COURSE_COLORS.map((c,i) => `<div class="color-dot${i===0?' selected':''}" style="background:${c}" data-color="${c}" onclick="selectColor(this)"></div>`).join('');
+  const emojis = COURSE_EMOJIS.map(e => `<span style="font-size:24px;cursor:pointer;padding:4px" onclick="document.getElementById('courseEmoji').value='${e}'">${e}</span>`).join('');
+  openModal(`
+    <div class="modal-title">Neuer Kurs</div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="courseName" placeholder="z. B. A1 – Anfänger"></div>
+    <div class="form-group"><label class="form-label">Level-Kürzel</label><input class="form-input" id="courseLevel" placeholder="z. B. A1, B2, C1" maxlength="6"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="courseEmoji" value="📚" maxlength="4" style="width:72px;font-size:22px;text-align:center"><div style="margin-top:8px">${emojis}</div></div>
+    <div class="form-group"><label class="form-label">Farbe</label><div class="color-dots">${cols}</div></div>
+    <button class="btn-primary" onclick="saveCourse()">Kurs erstellen</button>
+    <button class="btn-secondary" onclick="closeModal()">Abbrechen</button>`);
+}
+
+function selectColor(el) {
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function saveCourse() {
+  const name = document.getElementById('courseName')?.value?.trim();
+  if (!name) { showToast('Bitte einen Namen eingeben'); return; }
+  const color = document.querySelector('.color-dot.selected')?.dataset?.color || '#3D5A99';
+  const emoji = document.getElementById('courseEmoji')?.value || '📚';
+  const level = document.getElementById('courseLevel')?.value?.trim() || '';
+  state.courses.push({ id: uid(), name, emoji, color, level, subfolders: [] });
+  save(); closeModal(); render();
+}
+
+function openAddSubfolder() {
+  const cid = nav[0].courseId;
+  openModal(`
+    <div class="modal-title">Neuer Unterordner</div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="subName" placeholder="z. B. Grammatik, Wortschatz"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="subEmoji" value="🗂️" maxlength="4" style="width:72px;font-size:22px;text-align:center"></div>
+    <button class="btn-primary" onclick="saveSubfolder('${cid}')">Unterordner erstellen</button>
+    <button class="btn-secondary" onclick="closeModal()">Abbrechen</button>`);
+}
+
+function saveSubfolder(cid) {
+  const name = document.getElementById('subName')?.value?.trim();
+  if (!name) { showToast('Bitte einen Namen eingeben'); return; }
+  const emoji = document.getElementById('subEmoji')?.value || '🗂️';
+  const c = getCourse(cid);
+  if (!c.subfolders) c.subfolders = [];
+  c.subfolders.push({ id: uid(), name, emoji, lessons: [] });
+  save(); closeModal(); render();
+}
+
+function openAddLesson() {
+  const cid = nav[0].courseId, sid = nav[1].subfolderId;
+  openModal(`
+    <div class="modal-title">Neue Lektion</div>
+    <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="lessonName" placeholder="z. B. Lektion 1 – Begrüßung"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="lessonEmoji" value="📖" maxlength="4" style="width:72px;font-size:22px;text-align:center"></div>
+    <button class="btn-primary" onclick="saveLesson('${cid}','${sid}')">Lektion erstellen</button>
+    <button class="btn-secondary" onclick="closeModal()">Abbrechen</button>`);
+}
+
+function saveLesson(cid, sid) {
+  const name = document.getElementById('lessonName')?.value?.trim();
+  if (!name) { showToast('Bitte einen Namen eingeben'); return; }
+  const emoji = document.getElementById('lessonEmoji')?.value || '📖';
+  const s = getSubfolder(cid, sid);
+  if (!s.lessons) s.lessons = [];
+  s.lessons.push({ id: uid(), name, emoji, materials: [] });
+  save(); closeModal(); render();
+}
+
+let selectedMatType = 'link';
+
+function openAddMaterial() {
+  selectedMatType = 'link';
+  openModal(`
+    <div class="modal-title">Material hinzufügen</div>
+    <div class="form-group">
+      <label class="form-label">Typ</label>
+      <div class="type-grid">
+        ${Object.entries(MAT_META).map(([k,v]) => `<div class="type-btn${k==='link'?' selected':''}" onclick="selectMatType('${k}',this)"><div class="tb-icon">${v.icon}</div>${v.label}</div>`).join('')}
+      </div>
+    </div>
+    <div id="matFields">${matFieldsFor('link')}</div>
+    <button class="btn-primary" id="saveMatBtn" onclick="saveMaterial()">Hinzufügen</button>
+    <button class="btn-secondary" onclick="closeModal()">Abbrechen</button>`);
+}
+
+function selectMatType(type, el) {
+  selectedMatType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('matFields').innerHTML = matFieldsFor(type);
+}
+
+function matFieldsFor(type) {
+  if (type === 'link') return `
+    <div class="form-group"><label class="form-label">Titel</label><input class="form-input" id="matName" placeholder="z. B. DW Übung Artikel"></div>
+    <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="matUrl" placeholder="https://…" type="url" inputmode="url"></div>
+    <div class="form-group"><label class="form-label">Notiz (optional)</label><textarea class="form-textarea" id="matNote" placeholder="Kurze Beschreibung…"></textarea></div>`;
+  if (type === 'note') return `
+    <div class="form-group"><label class="form-label">Titel</label><input class="form-input" id="matName" placeholder="Titel der Notiz"></div>
+    <div class="form-group"><label class="form-label">Inhalt</label><textarea class="form-textarea" id="matNote" placeholder="Deine Notiz…" style="min-height:140px"></textarea></div>`;
+  const icons = { image:'🖼️', audio:'🎵', video:'🎬', pdf:'📄', file:'📎' };
+  const accepts = { image:'image/*', audio:'audio/*', video:'video/*', pdf:'application/pdf', file:'*/*' };
+  return `
+    <div class="form-group"><label class="form-label">Titel</label><input class="form-input" id="matName" placeholder="Beschriftung"></div>
+    <div class="form-group">
+      <label class="form-label">Datei</label>
+      <div class="file-drop" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-icon">${icons[type]||'📎'}</div>
+        <div id="fileDropLabel">Tippen zum Auswählen</div>
+        <div style="font-size:11px;margin-top:4px;color:var(--text-muted)" id="fileDropSub">Direkt vom iPhone-Speicher</div>
+      </div>
+      <input type="file" id="fileInput" accept="${accepts[type]||'*/*'}" style="display:none" onchange="onFileSelected(this)">
+      <div class="upload-progress" id="uploadProgress"><div class="upload-progress-bar" id="uploadProgressBar"></div></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notiz (optional)</label><textarea class="form-textarea" id="matNote"></textarea></div>`;
+}
+
+function onFileSelected(input) {
+  const file = input.files[0]; if (!file) return;
+  document.getElementById('fileDropLabel').textContent = '✓ ' + file.name;
+  document.getElementById('fileDropSub').textContent = (file.size/1024/1024).toFixed(2) + ' MB';
+  const n = document.getElementById('matName');
+  if (n && !n.value) n.value = file.name.replace(/\.[^.]+$/, '');
+}
+
+async function saveMaterial() {
+  const cid = nav[0].courseId, sid = nav[1].subfolderId, lid = nav[2].lessonId;
+  const name = document.getElementById('matName')?.value?.trim();
+  if (!name) { showToast('Bitte einen Titel eingeben'); return; }
+  const note = document.getElementById('matNote')?.value?.trim() || '';
+  const mat = { id: uid(), type: selectedMatType, name, note };
+  const btn = document.getElementById('saveMatBtn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Speichern…';
+
+  try {
+    if (selectedMatType === 'link') {
+      mat.url = document.getElementById('matUrl')?.value?.trim() || '';
+    } else if (selectedMatType !== 'note') {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput?.files[0];
+      if (!file) { showToast('Bitte eine Datei wählen'); btn.disabled = false; btn.textContent = 'Hinzufügen'; return; }
+      const ext = file.name.split('.').pop();
+      const path = `${cid}/${sid}/${lid}/${mat.id}.${ext}`;
+      document.getElementById('uploadProgress').classList.add('visible');
+      await sbStorage(path, file, pct => { document.getElementById('uploadProgressBar').style.width = pct + '%'; });
+      mat.storagePath = path;
+      mat.fileName = file.name;
+    }
+    const lesson = getLesson(cid, sid, lid);
+    if (!lesson.materials) lesson.materials = [];
+    lesson.materials.push(mat);
+    save(); closeModal(); render();
+    showToast('Material gespeichert ✓');
+  } catch(e) {
+    showToast('Fehler: ' + e.message);
+    btn.disabled = false; btn.textContent = 'Hinzufügen';
+  }
+}
+
+// ═══════════════════════════════════════
+// DELETE
+// ═══════════════════════════════════════
+function deleteCourse(cid) {
+  if (!confirm('Kurs wirklich löschen? Alle Inhalte gehen verloren.')) return;
+  state.courses = state.courses.filter(c => c.id !== cid); save(); render();
+}
+function deleteSubfolder(cid, sid) {
+  if (!confirm('Unterordner wirklich löschen?')) return;
+  getCourse(cid).subfolders = getCourse(cid).subfolders.filter(s => s.id !== sid); save(); render();
+}
+function deleteLesson(cid, sid, lid) {
+  if (!confirm('Lektion wirklich löschen?')) return;
+  getSubfolder(cid, sid).lessons = getSubfolder(cid, sid).lessons.filter(l => l.id !== lid); save(); render();
+}
+async function deleteMaterial(mid, cid, sid, lid) {
+  if (!confirm('Material löschen?')) return;
+  const l = getLesson(cid, sid, lid);
+  const m = l.materials.find(x => x.id === mid);
+  if (m?.storagePath) await deleteStorageFile(m.storagePath);
+  l.materials = l.materials.filter(x => x.id !== mid); save(); render();
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  document.getElementById('editModeBtn').textContent = editMode ? '✅' : '✏️';
+  render();
+}
+
+function openModal(html) {
+  document.getElementById('modalContent').innerHTML = html;
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.querySelector('#modalContent input, #modalContent textarea')?.focus(), 300);
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+function handleOverlayClick(e) { if (e.target === document.getElementById('modalOverlay')) closeModal(); }
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+load(); render();
+</script>
+</body>
+</html>
