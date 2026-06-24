@@ -357,6 +357,16 @@
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+          function slugify(text) {
+  return text
+    .toString()
+    .normalize("NFD")                // Umlaute entfernen
+    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
+    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
+    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
+    .toLowerCase();
+}
     
     const SUPABASE_URL = "https://wgqxwuyituzzrqxwlqwd.supabase.co";
     const SUPABASE_ANON_KEY =
@@ -402,17 +412,7 @@
     let currentLevel = null;
     let currentSublevel = null;
     let currentLesson = null;
-
-        function slugify(text) {
-  return text
-    .toString()
-    .normalize("NFD")                // Umlaute entfernen
-    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
-    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
-    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
-    .toLowerCase();
-}
-    
+   
     function setStatus(msg) {
       statusEl.textContent = msg;
     }
