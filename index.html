@@ -6,7 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- PWA: Manifest wird dynamisch erzeugt -->
-  <script>
+  <script type="module">
+    function slugify(text) {
+  return text
+    .toString()
+    .normalize("NFD")                // Umlaute entfernen
+    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
+    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
+    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
+    .toLowerCase();
+}
     const manifest = {
       name: "DaF Material Organizer",
       short_name: "DaF-Material",
@@ -817,7 +826,7 @@
           return;
         }
         try {
-          const path = `${currentCourse?.name}/${currentLevel?.name}/${currentSublevel?.name}/${currentLesson?.title}/${Date.now()}_${file.name}`;
+          const path = ${slugify(currentCourse?.name)}/${slugify(currentLevel?.name)}/${slugify(currentSublevel?.name)}/${slugify(currentLesson?.title)}/${Date.now()}_${slugify(file.name)};
           const { error: uploadError } = await supabase.storage
             .from("materials")
             .upload(path, file, { upsert: false });
