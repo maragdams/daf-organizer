@@ -356,17 +356,8 @@
   </main>
 
   <script type="module">
-    function slugify(text) {
-  return text
-    .toString()
-    .normalize("NFD")                // Umlaute entfernen
-    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
-    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
-    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
-    .toLowerCase();
-}
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+    
     const SUPABASE_URL = "https://wgqxwuyituzzrqxwlqwd.supabase.co";
     const SUPABASE_ANON_KEY =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndncXh3dXlpdHV6enJxeHdscXdkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzMDUzNzQsImV4cCI6MjA5Nzg4MTM3NH0.ObY19ctKk9gUm5rGOYmMa5M4jGGsNGL9NUxtSg6F9tY";
@@ -412,6 +403,16 @@
     let currentSublevel = null;
     let currentLesson = null;
 
+        function slugify(text) {
+  return text
+    .toString()
+    .normalize("NFD")                // Umlaute entfernen
+    .replace(/[\u0300-\u036f]/g, "") // diakritische Zeichen löschen
+    .replace(/[^a-zA-Z0-9]+/g, "-")  // alles Nicht-Alphanumerische → "-"
+    .replace(/^-+|-+$/g, "")         // führende/trailing "-"
+    .toLowerCase();
+}
+    
     function setStatus(msg) {
       statusEl.textContent = msg;
     }
